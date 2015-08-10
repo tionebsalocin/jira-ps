@@ -14,6 +14,18 @@ Function Set-JiraApiBase {
         Write-Host $env:JIRA_API_BASE
 }
 
+
+Function Set-JiraHttpProxy {
+    Param (
+        [Parameter (Mandatory=$True)]
+        [string] $Httpproxy
+    )
+	$env:JIRA_HTTP_PROXY = $Httpproxy
+    Write-Host "Jira proxy Set:"
+    Write-Host $env:JIRA_HTTP_PROXY
+}
+
+
 Function Set-JiraCredentials {
     Param(
         [Parameter(Mandatory=$True, Position=1)]
@@ -33,12 +45,12 @@ Function Invoke-JiraRequest($method, $request, $body) {
     If ($env:JIRA_CREDENTIALS -eq $Null) {
         Write-Error "No JIRA credentials have been set, please run ``Set-JiraCredentials'"
     }
-    Write-Debug "Calling $method $env:JIRA_API_BASE$request with AUTH: Basic $env:JIRA_CREDENTIALS"
+    Write-Debug "Calling $method $env:JIRA_API_BASE$request with AUTH: Basic $env:JIRA_CREDENTIALS $env:JIRA_HTTP_PROXY"
     If ($body -eq $Null) {
-        Return Invoke-RestMethod -Uri "${env:JIRA_API_BASE}${request}" -Headers @{"AUTHORIZATION"="Basic $env:JIRA_CREDENTIALS"} -Method $method -ContentType "application/json"
+        Return Invoke-RestMethod -Uri "${env:JIRA_API_BASE}${request}" -Headers @{"AUTHORIZATION"="Basic $env:JIRA_CREDENTIALS"} -Method $method -ContentType "application/json" -Proxy $env:JIRA_HTTP_PROXY
     }
     else {
-        Return Invoke-RestMethod -Uri "${env:JIRA_API_BASE}${request}" -Headers @{"AUTHORIZATION"="Basic $env:JIRA_CREDENTIALS"} -Method $method -Body $body -ContentType "application/json"
+        Return Invoke-RestMethod -Uri "${env:JIRA_API_BASE}${request}" -Headers @{"AUTHORIZATION"="Basic $env:JIRA_CREDENTIALS"} -Method $method -Body $body -ContentType "application/json" -Proxy $env:JIRA_HTTP_PROXY
     }
 }
 
@@ -129,6 +141,7 @@ Function add-JiraIssue {
 
 Export-ModuleMember -Function Set-JiraApiBase,
                               Set-JiraCredentials,
+                              Set-JiraHttpProxy,
                               ConvertTo-SafeUri,
                               Invoke-JiraRequest,
                               Add-JiraGrouptoProject,
