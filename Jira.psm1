@@ -68,8 +68,8 @@ Function Get-JiraIssue($issue) {
 }
 
 
-Function Get-JiraSearchResult($query) {
-  Return Invoke-JiraRequest GET "search?jql=$(ConvertTo-SafeUri $query)"
+Function Get-JiraSearchResult($query, $max=50, $start=0) {
+  Return Invoke-JiraRequest GET "search?jql=$(ConvertTo-SafeUri $query)&maxResults=$max&startAt=$start"
 }
 
 Function Get-JiraProjectList {
@@ -135,7 +135,7 @@ param (
   Write-verbose "Created JSON object:`n$json"
 
   $jiraissue=Invoke-JiraRequest POST "issue" $json $userAgent
-  "$jiraissue.key Created"
+  Return $jiraissue
 
 }
 
